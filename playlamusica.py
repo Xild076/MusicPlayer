@@ -46,7 +46,7 @@ def play_random_music():
             
             # Start the timer for the next song
             timer_remaining = timer_length
-            countdown()
+            #countdown()
     except Exception as e:
         print(f"An error occurred: {e}")
 
@@ -58,14 +58,18 @@ def handle_music_end(event):
 # Function to start the timer
 def start_timer():
     global timer_length, timer_running, timer_remaining
-    try:
+    if timer_running:
+        reset_timer()
+    else:
         timer_length = int(timer_length_entry.get())
+        
+        timer_running = True
+        timer_paused = False
         timer_remaining = timer_length
         timer_label.config(text=f'Time Left: {timer_remaining} seconds')
-        timer_running = True  # Set the timer_running flag to True
+        reset_timer()
+        timer_running = True
         countdown()
-    except:
-        pass
 
 # Function to stop the music
 def stop_music():
@@ -102,21 +106,12 @@ def scroll_status_label():
     
     if x < -canvas_width / 2:
         canvas.coords("status", canvas_width * 5, canvas_height / 2)
-    canvas.after(40, scroll_status_label)
+    canvas.after(30, scroll_status_label)
 
 # Function to update the status label
 def update_status(text):
     canvas.delete("status")
     canvas.create_text(canvas_width, canvas_height / 2, text=text, font=("Helvetica", 14), tags="status", anchor="e")
-    scroll_status_label()
-
-
-# ...
-
-# Example usage:
-# update_status("I like apples")
-
-
 
 
 # Function to pause/resume music
@@ -188,9 +183,8 @@ canvas = tk.Canvas(app, width=canvas_width, height=canvas_height)
 timer_label = Label(app, text=f'Time Left: {timer_length} seconds')
 timer_length_entry = Entry(app, width=5)
 timer_length_label = Label(app, text="Timer Length (s):")
-start_timer_button = Button(app, text="Start Timer", command=start_timer)
+start_timer_button = Button(app, text="Start/Reset Timer", command=start_timer)
 pause_resume_timer_button = Button(app, text="Pause/Resume Timer", command=pause_resume_timer)
-reset_timer_button = Button(app, text="Reset Timer", command=reset_timer)
 
 track_time_label = Label(app, text="Track Time Left: N/A seconds")
 track_time_label.pack()
@@ -207,11 +201,10 @@ timer_length_entry.pack()
 start_timer_button.pack()
 pause_resume_timer_button.pack()
 
-reset_timer_button.pack()
 
 # Start scrolling the status label
-scroll_status_label()
-update_playback_time_label()
 
+update_playback_time_label()
+canvas.after(40, scroll_status_label)
 # Start the Tkinter main loop
 app.mainloop()
