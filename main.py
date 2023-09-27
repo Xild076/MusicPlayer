@@ -1,8 +1,8 @@
 import cx_Freeze
 
-exec_options = {
-    "packages": [],
-}
+
+buildOptions = dict(include_files = ['UDMusicPlayer/allmusic/'])
+
 
 executables = [
     cx_Freeze.Executable(
@@ -15,6 +15,6 @@ cx_Freeze.setup(
     name="UD Musica Player",
     version="1.4",
     description="epic musiccccccccc hehehheheh yayayayayayayayaay :) :D :|",
-    options={"build_exe": exec_options},
+    options=dict(build_exe = buildOptions),
     executables=executables
 )
