@@ -1,8 +1,10 @@
 import os
 import random
 import pygame
+import ttkthemes as ttk
 import tkinter as tk
-from tkinter import Scale, Button, Label, Entry, Listbox
+from tkinter.ttk import Scale, Button, Label, Entry
+from tkinter import Listbox, Canvas
 
 # Initialize pygame
 pygame.init()
@@ -23,7 +25,7 @@ QUEUE = []
 QUEUE_INDEX = 0
 
 def add_songs_to_queue():
-    global QUEUEx
+    global QUEUE
     # Get a list of music files in the folder
     music_files = [f for f in os.listdir(MUSIC_FOLDER) if f.endswith('.mp3')]
 
@@ -69,14 +71,17 @@ def start_timer():
     if TIMER_RUNNING:
         reset_timer()
     else:
-        TIMER_LENGTH = int(timer_length_entry.get())
+        try:
+            TIMER_LENGTH = int(timer_length_entry.get())
 
-        TIMER_RUNNING = True
-        TIMER_PAUSED = False
-        TIMER_REMAINING = TIMER_LENGTH
-        timer_label.config(text=f'Time Left: {TIMER_REMAINING} seconds')
-        reset_timer()
-        TIMER_RUNNING = True
+            TIMER_RUNNING = True
+            TIMER_PAUSED = False
+            TIMER_REMAINING = TIMER_LENGTH
+            timer_label.config(text=f'Time Left: {TIMER_REMAINING} seconds')
+            reset_timer()
+            TIMER_RUNNING = True
+        except:
+            pass
     countdown()
 
 def stop_music():
@@ -98,7 +103,7 @@ def update_playback_time_label():
     app.after(1000, update_playback_time_label)
 
 def change_volume(val):
-    volume = int(val) / 100
+    volume = float(val) / 100
     pygame.mixer.music.set_volume(volume)
 
 def scroll_status_label():
@@ -154,7 +159,7 @@ def countdown():
         TIMER_REMAINING -= .001
         timer_label.config(text=f'Time Left: {round(TIMER_REMAINING)} seconds')
         app.after(1, countdown)
-    elif TIMER_REMAINING == 0:
+    elif round(TIMER_REMAINING) == 0:
         PAUSED_POSITION = pygame.mixer.music.get_pos() / 1000 
         pygame.mixer.music.pause()
         CURRENT_SONG_PAUSED = True
@@ -181,7 +186,7 @@ def play_next_in_queue():
             CURRENT_SONG_PAUSED = False
             update_queue_display()
     else:
-        update_status("Queue is empty")
+        play_random_music()
 
 def skip_to_song(index):
     global QUEUE
@@ -194,7 +199,7 @@ def skip_to_song(index):
         play_next_in_queue()
 
 # Initialize the Tkinter app
-app = tk.Tk()
+app = ttk.ThemedTk(theme='breeze')
 app.title("Music Player")
 pygame.mixer.music.set_endevent(pygame.USEREVENT)
 
@@ -214,7 +219,7 @@ volume_label = Label(app, text="Volume")
 volume_scale = Scale(app, from_=0, to=100, orient='horizontal', command=change_volume)
 canvas_width = 400  # Adjust the width as needed
 canvas_height = 30  # Adjust the height as needed
-canvas = tk.Canvas(app, width=canvas_width, height=canvas_height)
+canvas = Canvas(app, width=canvas_width, height=canvas_height)
 timer_label = Label(app, text=f'Time Left: {TIMER_LENGTH} seconds')
 timer_length_entry = Entry(app, width=5)
 timer_length_label = Label(app, text="Timer Length (s):")
