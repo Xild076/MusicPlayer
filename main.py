@@ -1,13 +1,14 @@
 import cx_Freeze
 
 
-buildOptions = dict(include_files = ['UDMusicPlayer/allmusic/'])
+buildOptions = dict(include_files = ['allmusic/'])
 
 
 executables = [
     cx_Freeze.Executable(
-        "C:/Users/harry/PycharmProjects/UDMusicPlayer/playlamusica.py",
+        "C:/Users/harry/Documents/Code Projects/UDMusicPlayer/UDMusicPlayer/playlamusica.py",
         base="Win32GUI",  # Use "Win32GUI" to create a GUI application
+        icon='icon.ico'
     )
 ]
 

@@ -1,10 +1,11 @@
 import os
 import random
 import pygame
-import ttkthemes as ttk
 import tkinter as tk
+from tkinter import ttk
 from tkinter.ttk import Scale, Button, Label, Entry
 from tkinter import Listbox, Canvas
+from ttkthemes import ThemedTk
 
 # Initialize pygame
 pygame.init()
@@ -14,7 +15,7 @@ MUSIC_FOLDER = 'allmusic'
 
 # Initialize timer variables
 TIMER_LENGTH = 60  # Default timer length in seconds
-TIMER_RUNNING = False   
+TIMER_RUNNING = False
 TIMER_PAUSED = False
 TIMER_REMAINING = TIMER_LENGTH
 CURRENT_TRACK_LENGTH = 0  # Track length in seconds
@@ -54,8 +55,9 @@ def play_random_music():
         update_track_time_label(CURRENT_TRACK_LENGTH)
         CURRENT_SONG_PAUSED = False
         update_queue_display()
-    else:
+    else:   
         update_status("Queue is empty")
+        add_songs_to_queue()
 
 def update_queue_display():
     queue_listbox.delete(0, tk.END)  # Clear the queue listbox
@@ -80,7 +82,7 @@ def start_timer():
             timer_label.config(text=f'Time Left: {TIMER_REMAINING} seconds')
             reset_timer()
             TIMER_RUNNING = True
-        except:
+        except ValueError:
             pass
     countdown()
 
@@ -96,14 +98,14 @@ def update_playback_time_label():
         remaining_time = max(0, CURRENT_TRACK_LENGTH - current_time)
         update_track_time_label(remaining_time)
         if remaining_time == 0:
-            play_random_music()
+            play_next_in_queue()
     elif not CURRENT_SONG_PAUSED:
         # Music has ended, play a new song
-        play_random_music()
+        play_next_in_queue()
     app.after(1000, update_playback_time_label)
 
 def change_volume(val):
-    volume = float(val) / 100
+    volume = float(val) / 200
     pygame.mixer.music.set_volume(volume)
 
 def scroll_status_label():
@@ -133,7 +135,7 @@ def pause_resume_music():
             PAUSED_POSITION = pygame.mixer.music.get_pos() / 1000  # Store the current position
             pygame.mixer.music.pause()
             CURRENT_SONG_PAUSED = True
-    except Exception as e:
+    except pygame.error as e:
         print(f"An error occurred: {e}")
 
 def pause_resume_timer():
@@ -156,11 +158,11 @@ def reset_timer():
 def countdown():
     global TIMER_REMAINING, CURRENT_SONG_PAUSED, PAUSED_POSITION
     if TIMER_RUNNING and not TIMER_PAUSED and TIMER_REMAINING > 0:
-        TIMER_REMAINING -= .001
-        timer_label.config(text=f'Time Left: {round(TIMER_REMAINING)} seconds')
-        app.after(1, countdown)
-    elif round(TIMER_REMAINING) == 0:
-        PAUSED_POSITION = pygame.mixer.music.get_pos() / 1000 
+        TIMER_REMAINING -= 1
+        timer_label.config(text=f'Time Left: {TIMER_REMAINING} seconds')
+        app.after(1000, countdown)
+    elif TIMER_REMAINING == 0:
+        PAUSED_POSITION = pygame.mixer.music.get_pos() / 1000
         pygame.mixer.music.pause()
         CURRENT_SONG_PAUSED = True
 
@@ -186,7 +188,8 @@ def play_next_in_queue():
             CURRENT_SONG_PAUSED = False
             update_queue_display()
     else:
-        play_random_music()
+        add_songs_to_queue()
+        play_next_in_queue()
 
 def skip_to_song(index):
     global QUEUE
@@ -199,35 +202,43 @@ def skip_to_song(index):
         play_next_in_queue()
 
 # Initialize the Tkinter app
-app = ttk.ThemedTk(theme='breeze')
+app = ThemedTk(theme='arc')  # Use the 'arc' theme for a modern look
 app.title("Music Player")
 pygame.mixer.music.set_endevent(pygame.USEREVENT)
 
 # Bind the music end event
 app.bind(pygame.USEREVENT, handle_music_end)
 
+damn = Label(app, text="Harry's Music Player", font=("Helvetica", 20, "bold"))
+damn.pack()
+
+
 # Create UI elements
-queue_label = Label(app, text="Queue")
+queue_label = Label(app, text="Queue", font=("Helvetica", 16, "bold"))
 queue_label.pack()
 
-queue_listbox = Listbox(app, height=5, width=40)
+queue_listbox = Listbox(app, height=5, width=40, font=("Helvetica", 12))
 queue_listbox.pack()
 
-start_resume_button = Button(app, text="Start/Skip Music", command=play_next_in_queue)
-pause_resume_button = Button(app, text="Pause/Resume Music", command=pause_resume_music)
-volume_label = Label(app, text="Volume")
-volume_scale = Scale(app, from_=0, to=100, orient='horizontal', command=change_volume)
+start_resume_button = Button(app, text="Start/Skip Music", command=play_next_in_queue, style='TButton')
+pause_resume_button = Button(app, text="Pause/Resume Music", command=pause_resume_music, style='TButton')
+volume_label = Label(app, text="Volume", font=("Helvetica", 14))
+volume_scale = Scale(app, from_=0, to=200, orient='horizontal', command=change_volume)
 canvas_width = 400  # Adjust the width as needed
 canvas_height = 30  # Adjust the height as needed
 canvas = Canvas(app, width=canvas_width, height=canvas_height)
-timer_label = Label(app, text=f'Time Left: {TIMER_LENGTH} seconds')
-timer_length_entry = Entry(app, width=5)
-timer_length_label = Label(app, text="Timer Length (s):")
-start_timer_button = Button(app, text="Start/Reset Timer", command=start_timer)
-pause_resume_timer_button = Button(app, text="Pause/Resume Timer", command=pause_resume_timer)
+timer_label = Label(app, text=f'Time Left: {TIMER_LENGTH} seconds', font=("Helvetica", 14))
+timer_length_entry = Entry(app, width=5, font=("Helvetica", 12))
+timer_length_label = Label(app, text="Timer Length (s):", font=("Helvetica", 14))
+start_timer_button = Button(app, text="Start/Reset Timer", command=start_timer, style='TButton')
+pause_resume_timer_button = Button(app, text="Pause/Resume Timer", command=pause_resume_timer, style='TButton')
 
-track_time_label = Label(app, text="Track Time Left: N/A seconds")
+track_time_label = Label(app, text="Track Time Left: N/A seconds", font=("Helvetica", 12))
 track_time_label.pack()
+
+# Apply styles to buttons
+style = ttk.Style()
+style.configure('TButton', font=("Helvetica", 12))
 
 # Place UI elements on the window
 start_resume_button.pack(pady=5)
