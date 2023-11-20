@@ -14,7 +14,7 @@ executables = [
 
 cx_Freeze.setup(
     name="UD Musica Player",
-    version="1.4",
+    version="12.131417823",
     description="epic musiccccccccc hehehheheh yayayayayayayayaay :) :D :|",
     options=dict(build_exe = buildOptions),
     executables=executables
